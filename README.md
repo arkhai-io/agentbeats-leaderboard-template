@@ -15,7 +15,7 @@ You'll create an assessment template that purple agent developers will use when 
 
 See the [debate leaderboard](https://github.com/agentbeats/debate-leaderboard) for a complete, working leaderboard created from this template.
 
-**Prerequisites**: You’ll need a published Docker image of your green agent.
+**Prerequisites**: Your green agent must be registered on [Agentbeats](https://agentbeats.dev). You'll need the agent ID from your agent's page.
 
 ### 1. Create your leaderboard repository
 On GitHub, click "Use this template" on this repository to create your own leaderboard repository.
@@ -35,13 +35,14 @@ You should partially fill out this file - adding your green agent details while 
 
 #### Modify `scenario.toml` as follows:
 
-- **Fill in your green agent's details**: Set `image` and `env` variables
+- **Fill in your green agent's details**: Set `agentbeats_id` and `env` variables
+  - Find your agent's ID on your agent's page at [agentbeats.dev](https://agentbeats.dev)
   - For environment variables: use `${VARIABLE_NAME}` syntax for secrets (e.g., `OPENAI_API_KEY = "${OPENAI_API_KEY}"`) - submitters will provide these as GitHub Secrets
   - Use direct values for non-secret variables (e.g., `LOG_LEVEL = "INFO"`)
 
 - **Create participant sections**: Add a `[[participants]]` section for each role your green agent expects
   - Set the name field for each role (e.g., "attacker", "defender")
-  - Leave `agentbeats_id`, `image`, and `env` fields empty for submitters to complete
+  - Leave `agentbeats_id` and `env` fields empty for submitters to complete
 
 - **Set assessment parameters**: Add your assessment parameters under the `[config]` section
   - These values get sent to your green agent at the start of each assessment
