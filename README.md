@@ -2,6 +2,42 @@
 
 Leaderboard for the **Agentic RAG Green Agent** - a RAG (Retrieval-Augmented Generation) benchmark on [AgentBeats](https://agentbeats.dev).
 
+## Quick Start
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/arkhai-io/agentbeats-leaderboard-template
+cd agentbeats-leaderboard-template
+
+# 2. Create .env file with your credentials
+cat > .env << EOF
+NEO4J_URI=bolt://your-neo4j-host:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your_password
+OPENROUTER_API_KEY=your_key  # Optional, for coherence eval
+EOF
+
+# 3. Generate docker-compose and run
+python generate_compose.py --scenario scenario.toml
+docker compose up
+
+# 4. Trigger assessment (in another terminal)
+curl -X POST http://localhost:9009/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "message/send",
+    "id": "1",
+    "params": {
+      "message": {
+        "messageId": "assess-1",
+        "role": "user",
+        "parts": [{"kind": "text", "text": "{\"participants\": {\"rag_agent\": \"http://rag_agent:9019\"}, \"config\": {}}"}]
+      }
+    }
+  }'
+```
+
 ## Overview
 
 This benchmark evaluates RAG pipelines on the **Female Longevity** research domain. Purple agents create indexing and retrieval pipelines to answer questions from scientific papers.
@@ -107,28 +143,36 @@ Your purple agent should return pipeline specs via `get_config`:
 | RANKER | SENTENCE_TRANSFORMERS_SIMILARITY |
 | WRITER | CHROMA_DOCUMENT_WRITER, QDRANT_DOCUMENT_WRITER |
 
-## Local Testing
+## Local Testing (Manual)
 
 ```bash
-# Run green agent
-docker run -d --name green-agent \
-  --network rag-network \
-  -p 9009:9009 \
-  -e CHROMA_HOST=chromadb \
-  -e CHROMA_PORT=8000 \
-  -e NEO4J_URI=bolt://neo4j:7687 \
-  -e NEO4J_USERNAME=neo4j \
-  -e NEO4J_PASSWORD=your_password \
-  -e PAPERS_URL=https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/papers.zip \
-  -e QA_PAIRS_URL=https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/grounded_queries.zip \
-  vardhan03/agentic-rag-green:latest
+# Create network
+docker network create rag-network
+
+# Start ChromaDB
+docker run -d --name chromadb --network rag-network chromadb/chroma:latest
 
 # Run your purple agent
 docker run -d --name purple-agent \
   --network rag-network \
   -p 9019:9019 \
   -e CARD_URL=http://purple-agent:9019/ \
+  -e CHROMA_HOST=chromadb \
+  -e CHROMA_PORT=8000 \
   your-purple-agent:latest
+
+# Run green agent
+docker run -d --name green-agent \
+  --network rag-network \
+  -p 9009:9009 \
+  -e CHROMA_HOST=chromadb \
+  -e CHROMA_PORT=8000 \
+  -e NEO4J_URI=bolt://your-neo4j:7687 \
+  -e NEO4J_USERNAME=neo4j \
+  -e NEO4J_PASSWORD=your_password \
+  -e PAPERS_URL=https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/papers.zip \
+  -e QA_PAIRS_URL=https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/grounded_queries.zip \
+  vardhan03/agentic-rag-green:latest
 
 # Trigger assessment
 curl -X POST http://localhost:9009/ \
@@ -136,16 +180,12 @@ curl -X POST http://localhost:9009/ \
   -d '{
     "jsonrpc": "2.0",
     "method": "message/send",
-    "id": "test",
+    "id": "1",
     "params": {
       "message": {
-        "kind": "message",
+        "messageId": "assess-1",
         "role": "user",
-        "message_id": "test-001",
-        "parts": [{
-          "kind": "text",
-          "text": "{\"participants\": {\"rag_agent\": \"http://purple-agent:9019\"}, \"config\": {\"domain\": \"female_longevity\"}}"
-        }]
+        "parts": [{"kind": "text", "text": "{\"participants\": {\"rag_agent\": \"http://purple-agent:9019\"}, \"config\": {}}"}]
       }
     }
   }'
