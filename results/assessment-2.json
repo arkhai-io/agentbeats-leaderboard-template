@@ -1,0 +1,15 @@
+{
+  "participants": {
+    "rag_agent": "019bc103-44e8-78b1-8124-e40c406c12d8"
+  },
+  "results": [{
+    "pass_rate": 1.0,
+    "time_used": 94.1,
+    "max_score": 10,
+    "questions_answered": 10,
+    "avg_rouge_l": 0.0124,
+    "avg_bleu": 0.0004,
+    "avg_coherence": 0.2546
+  }],
+  "timestamp": "2026-01-15T17:45:00Z"
+}
