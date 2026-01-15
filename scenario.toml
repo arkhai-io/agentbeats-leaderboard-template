@@ -1,5 +1,5 @@
 [green_agent]
-agentbeats_id = ""  # Fill after registering on AgentBeats
+agentbeats_id = "019bc0c3-0f75-7c32-8f9b-a9f0087ca3ea"
 env = { 
   NEO4J_URI = "${NEO4J_URI}",
   NEO4J_USERNAME = "${NEO4J_USERNAME}",
