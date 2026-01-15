@@ -12,7 +12,7 @@ env = {
 }
 
 [[participants]]
-agentbeats_id = ""  # Purple agent submitters fill this with their AgentBeats ID
+agentbeats_id = "019bc103-44e8-78b1-8124-e40c406c12d8"  # agentic-rag-template-purple
 name = "rag_agent"
 env = {
   CARD_URL = "http://rag_agent:9019/"  # Required for A2A discovery
