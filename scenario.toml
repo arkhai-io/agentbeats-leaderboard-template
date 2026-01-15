@@ -1,16 +1,25 @@
 [green_agent]
-agentbeats_id = ""
-env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
+agentbeats_id = ""  # Fill after registering on AgentBeats
+env = { 
+  NEO4J_URI = "${NEO4J_URI}",
+  NEO4J_USERNAME = "${NEO4J_USERNAME}",
+  NEO4J_PASSWORD = "${NEO4J_PASSWORD}",
+  CHROMA_HOST = "chromadb",
+  CHROMA_PORT = "8000",
+  OPENROUTER_API_KEY = "${OPENROUTER_API_KEY}",
+  PAPERS_URL = "https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/papers.zip",
+  QA_PAIRS_URL = "https://github.com/arkhai-io/agentic-rag-green/releases/download/v1.0.0/grounded_queries.zip"
+}
 
 [[participants]]
-agentbeats_id = ""
-name = "role_1_name"
-env = {}
-
-[[participants]]
-agentbeats_id = ""
-name = "role_2_name"
+agentbeats_id = ""  # Purple agent submitters fill this
+name = "rag_agent"
 env = {}
 
 [config]
-# Add your assessment config here
+# Assessment configuration - purple agents customize these values
+domain = "female_longevity"
+agent_name = ""           # Purple agent fills with their registered agent name
+project_name = ""         # Purple agent fills with their project name
+indexing_pipeline = ""    # Purple agent fills (e.g., "pdf_indexer")
+retrieval_pipeline = ""   # Purple agent fills (e.g., "retriever")
