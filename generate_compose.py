@@ -63,43 +63,20 @@ services:
     image: chromadb/chroma:latest
     platform: linux/amd64
     container_name: chromadb
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')\""]
-      interval: 5s
-      timeout: 10s
-      retries: 20
-      start_period: 10s
     networks:
       - agent-network
 
+{participant_services}
   green-agent:
     image: {green_image}
     platform: linux/amd64
     container_name: green-agent
     command: ["--host", "0.0.0.0", "--port", "{green_port}", "--card-url", "http://green-agent:{green_port}"]
+    ports:
+      - "{green_port}:{green_port}"
     environment:{green_env}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:{green_port}/.well-known/agent-card.json"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s
     depends_on:
-      chromadb:
-        condition: service_healthy{green_depends}
-    networks:
-      - agent-network
-
-{participant_services}
-  agentbeats-client:
-    image: ghcr.io/agentbeats/agentbeats-client:v1.0.0
-    platform: linux/amd64
-    container_name: agentbeats-client
-    volumes:
-      - ./a2a-scenario.toml:/app/scenario.toml
-      - ./output:/app/output
-    command: ["scenario.toml", "output/results.json"]
-    depends_on:{client_depends}
+      - chromadb{green_depends}
     networks:
       - agent-network
 
@@ -114,12 +91,8 @@ PARTICIPANT_TEMPLATE = """  {name}:
     container_name: {name}
     command: ["--host", "0.0.0.0", "--port", "{port}", "--card-url", "http://{name}:{port}"]
     environment:{env}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:{port}/.well-known/agent-card.json"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 30s
+    depends_on:
+      - chromadb
     networks:
       - agent-network
 """
@@ -184,10 +157,8 @@ def format_env_vars(env_dict: dict[str, Any]) -> str:
 
 
 def format_depends_on(services: list) -> str:
-    lines = []
-    for service in services:
-        lines.append(f"      {service}:")
-        lines.append(f"        condition: service_healthy")
+    """Format simple depends_on list (no health checks)."""
+    lines = [f"      - {service}" for service in services]
     return "\n" + "\n".join(lines)
 
 
@@ -207,15 +178,12 @@ def generate_docker_compose(scenario: dict[str, Any]) -> str:
         for p in participants
     ])
 
-    all_services = ["green-agent"] + participant_names
-
     return COMPOSE_TEMPLATE.format(
         green_image=green["image"],
         green_port=DEFAULT_GREEN_PORT,
         green_env=format_env_vars(green.get("env", {})),
         green_depends=format_depends_on(participant_names),
-        participant_services=participant_services,
-        client_depends=format_depends_on(all_services)
+        participant_services=participant_services
     )
 
 
