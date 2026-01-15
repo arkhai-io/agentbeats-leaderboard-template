@@ -64,10 +64,10 @@ services:
     platform: linux/amd64
     container_name: chromadb
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')\""]
       interval: 5s
-      timeout: 3s
-      retries: 10
+      timeout: 10s
+      retries: 20
       start_period: 10s
     networks:
       - agent-network
